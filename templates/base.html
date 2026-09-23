@@ -1,0 +1,103 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}PNK Inmobiliaria{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/estilos.css' %}">
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="{% url 'inicio' %}">PNK Inmobiliaria</a>
+
+        <div class="navbar-nav ms-auto">
+            <a class="nav-link" href="{% url 'inicio' %}">Inicio</a>
+            <a class="nav-link" href="{% url 'propiedades' %}">Propiedades</a>
+            <a class="nav-link" href="{% url 'asesoria' %}">Asesoría</a>
+            <a class="nav-link" href="{% url 'consejos' %}">Consejos</a>
+        </div>
+    </div>
+</nav>
+
+<header class="container mt-4">
+    <h1>PNK Inmobiliaria</h1>
+    <p>Sitio informativo desarrollado con Django.</p>
+</header>
+
+<main class="container mt-4">
+    {% block content %}{% endblock %}
+</main>
+
+<footer class="container mt-5 pt-3 border-top">
+    <p>PNK Inmobiliaria - Proyecto Django 2026</p>
+</footer>
+
+<div class="modal fade" id="modalFavoritos" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5>Mis favoritos</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="listaFavoritos"></div>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+<script>
+function obtenerFavoritos() {
+    return JSON.parse(localStorage.getItem('favoritosPNK') || '[]');
+}
+
+function actualizarFavoritos() {
+    const favoritos = obtenerFavoritos();
+    document.getElementById('contadorFavoritos').textContent = favoritos.length;
+
+    const lista = document.getElementById('listaFavoritos');
+
+    if (favoritos.length === 0) {
+        lista.innerHTML = '<p>No tienes favoritos.</p>';
+    } else {
+        lista.innerHTML = favoritos.map(function(item) {
+            return '<p>' + item.nombre +
+                ' <button class="btn btn-sm btn-danger" onclick="quitarFavorito(' +
+                item.id + ')">Quitar</button></p>';
+        }).join('');
+    }
+}
+
+function toggleFavorito(id, nombre) {
+    let favoritos = obtenerFavoritos();
+    const indice = favoritos.findIndex(function(item) {
+        return item.id === id;
+    });
+
+    if (indice >= 0) {
+        favoritos.splice(indice, 1);
+    } else {
+        favoritos.push({id: id, nombre: nombre});
+    }
+
+    localStorage.setItem('favoritosPNK', JSON.stringify(favoritos));
+    actualizarFavoritos();
+}
+
+function quitarFavorito(id) {
+    const nuevos = obtenerFavoritos().filter(function(item) {
+        return item.id !== id;
+    });
+
+    localStorage.setItem('favoritosPNK', JSON.stringify(nuevos));
+    actualizarFavoritos();
+}
+
+document.addEventListener('DOMContentLoaded', actualizarFavoritos);
+</script>
+
+</body>
+</html>
